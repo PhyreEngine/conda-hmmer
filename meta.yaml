@@ -1,0 +1,69 @@
+{% set name = "hmmer" %}
+{% set hmmer_version = "3.1b2" %}
+
+{% set easel_version = load_file_regex(
+    load_file='easel/configure.ac',
+    regex_pattern='(?m)^AC_INIT\(Easel, ([^,]+)'
+   ).group(1)
+%}
+
+package:
+  name: {{ name | lower }}
+
+source:
+  url: http://eddylab.org/software/hmmer3/{{ hmmer_version }}/{{ name }}-{{ hmmer_version }}.tar.gz
+  sha256: dd16edf4385c1df072c9e2f58c16ee1872d855a018a2ee6894205277017b5536
+
+outputs:
+  - name: hmmer
+    version: {{ hmmer_version }}
+    features:
+    - arch_{{ architecture }}
+    requirements:
+      build:
+        - {{ compiler('c') }}
+    build:
+      string: {{ architecture }}_{{ environ.get("BUILD_NUMBER", 0) }}
+      script: |
+        # Strip conda's architecture settings and optimisation level
+        export CFLAGS=$(
+            echo "$CFLAGS" | sed \
+            -e 's/-O[^ ]\+/-O3/' \
+            -e 's/-march=[^ ]\+/-march={{ architecture }}/' \
+            -e 's/-mtune=[^ ]\+//')
+        export CPPFLAGS=$( echo "$CPPFLAGS" | sed 's/-O[^ ]\+//' )
+        ./configure --with-gcc-arch={{ architecture }} --prefix="$PREFIX"
+        make V=1
+        make install
+
+  - name: easel
+    version: {{ easel_version }}
+    features:
+    - arch_{{ architecture }}
+    requirements:
+      build:
+        - {{ compiler('c') }}
+    build:
+      string: {{ architecture }}_{{ environ.get("BUILD_NUMBER", 0) }}
+      script: |
+        # Strip conda's architecture settings and optimisation level
+        export CFLAGS=$(
+            echo "$CFLAGS" | sed \
+            -e 's/-O[^ ]\+/-O3/' \
+            -e 's/-march=[^ ]\+/-march={{ architecture }}/' \
+            -e 's/-mtune=[^ ]\+//')
+        export CPPFLAGS=$( echo "$CPPFLAGS" | sed 's/-O[^ ]\+//' )
+        cd easel
+        # Make missing documentation makefile, or configure will give an exit
+        # value of 1
+        mkdir documentation
+        touch documentation/Makefile.in
+        ./configure --with-gcc-arch={{ architecture }} --prefix="$PREFIX"
+        # Remove fake documentation directory to stop make recursing into it
+        rm -r documentation
+        make V=1
+        make install
+
+about:
+  home: https://github.com/soedinglab/hh-suite
+  license: GPL3
