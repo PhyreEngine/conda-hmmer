@@ -12,7 +12,7 @@ both HMMER and Easel.
 
 ## Building
 
-You should be able to build this package by simply running `conda build .`.
+You should be able to build this package by simply running `./build`.
 This recipe will build several variants, one for each supported CPU
 architecture.
 
