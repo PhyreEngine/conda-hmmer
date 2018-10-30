@@ -17,12 +17,12 @@ source:
 outputs:
   - name: hmmer
     version: {{ hmmer_version }}
-    features:
-    - arch_{{ architecture }}
     requirements:
       build:
         - {{ compiler('c') }}
     build:
+      features:
+      - arch_{{ architecture }}
       string: {{ architecture }}_{{ environ.get("BUILD_NUMBER", 0) }}
       script: |
         # Strip conda's architecture settings and optimisation level
@@ -38,12 +38,12 @@ outputs:
 
   - name: easel
     version: {{ easel_version }}
-    features:
-    - arch_{{ architecture }}
     requirements:
       build:
         - {{ compiler('c') }}
     build:
+      features:
+      - arch_{{ architecture }}
       string: {{ architecture }}_{{ environ.get("BUILD_NUMBER", 0) }}
       script: |
         # Strip conda's architecture settings and optimisation level
